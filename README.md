@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
   <title>My First GitHub Page</title>
