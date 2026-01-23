@@ -11,10 +11,10 @@
         <h1> web page 2 </h1>
         <nav class="nava">
             <ul>
-                <li>home </li>
+                <li>Dilshaj Infotech </li>
                 <li>about</li>
                 <li>help</li>
-                <li>contact</li>
+                <li>8977272783</li>
                     
             </ul>
         </nav>
