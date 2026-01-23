@@ -26,7 +26,7 @@
 <div class="table">
     <table border="">
          
-            <th>Airi Satou</th><th>Accountant</th><th>Tokyo</th><th>33</th></li>
+            <th>Airi Satou</th><th>Dilshaj infotech.tec Accountant</th><th>Tokyo</th><th>33</th></li>
             <tr><td>Angelica Ramos</td><td>Chief Executive Officer (CEO)</td><td>London</td><td>33</td></tr>
             <tr><td>Angelica Ramos</td><td>Chief Executive Officer (CEO)</td><td>London</td><td>33</td></tr>
             <tr><td>Angelica Ramos</td><td>Chief Executive Officer (CEO)</td><td>London</td><td>33</td></tr>
