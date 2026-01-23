@@ -11,7 +11,7 @@
         <h1> web page 2 </h1>
         <nav class="nava">
             <ul>
-                <li>Dilshaj Infotech </li>
+                <li>Aravind</li>
                 <li>about</li>
                 <li>help</li>
                 <li>8977272783</li>
