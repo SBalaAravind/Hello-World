@@ -1,43 +1,44 @@
-name: Deploy WAR to EC2 Tomcat
+name: Java WAR Deploy to Tomcat
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
 
-      - name: Build WAR
-        run: mvn clean package -DskipTests
+    - name: Build project
+      run: mvn clean package
 
-      - name: Copy WAR to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "webapp/target/*.war"
-          target: "/tmp"
+    - name: Copy WAR to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        source: "webapp/target/*.war"
+        target: "/tmp"
 
-      - name: Deploy on Tomcat
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            /opt/tomcat/bin/shutdown.sh || true
-            rm -rf /opt/tomcat/webapps/webapp*
-            mv /tmp/*.war /opt/tomcat/webapps/webapp.war
-            /opt/tomcat/bin/startup.sh
+    - name: Deploy to Tomcat
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          sudo rm -rf /opt/tomcat/webapps/webapp*
+          sudo mv /tmp/*.war /opt/tomcat/webapps/
+          sudo /opt/tomcat/bin/shutdown.sh
+          sudo /opt/tomcat/bin/startup.sh
