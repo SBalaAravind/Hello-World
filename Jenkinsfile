@@ -3,25 +3,12 @@ pipeline {
 
     tools {
         maven 'maven'
-    }
-
-    environment {
-        DEPLOY_USER = "ubuntu"
-        DEPLOY_HOST = "18.216.64.238"
-        TOMCAT_HOME = "/opt/tomcat"
-        DEPLOY_PATH = "/opt/tomcat/webapps"
+        jdk 'jdk17'
     }
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                git branch: 'master',
-                    url: 'https://github.com/SBalaAravind/Hello-World.git'
-            }
-        }
-
-        stage('Build WAR') {
+        stage('Build') {
             steps {
                 sh 'mvn clean package'
             }
@@ -35,30 +22,25 @@ pipeline {
 
         stage('Deploy to Tomcat') {
             steps {
-                sh """
-                ssh ${DEPLOY_USER}@${DEPLOY_HOST} '
-                    rm -rf ${DEPLOY_PATH}/*
-                '
+                sh '''
+                ssh -o StrictHostKeyChecking=no ubuntu@18.216.64.238 \
+                "rm -rf /opt/tomcat/webapps/*"
 
-                scp webapp/target/*.war \
-                    ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/
-
-                ssh ${DEPLOY_USER}@${DEPLOY_HOST} '
-                    ${TOMCAT_HOME}/bin/shutdown.sh || true
-                    sleep 5
-                    ${TOMCAT_HOME}/bin/startup.sh
-                '
-                """
+                scp -o StrictHostKeyChecking=no \
+                webapp/target/*.war \
+                ubuntu@18.216.64.238:/opt/tomcat/webapps/
+                '''
             }
         }
     }
 
     post {
         success {
-            echo '✅ WAR deployed successfully'
+            echo '✅ Deployment successful'
         }
         failure {
             echo '❌ Pipeline failed'
         }
     }
 }
+
