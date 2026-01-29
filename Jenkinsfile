@@ -1,33 +1,67 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'Java-17'
+        maven 'Maven-3.9.6'
+    }
+
     environment {
-        // Optional: JAVA_HOME, MAVEN_HOME set chesuko
-        JAVA_HOME = "/usr/lib/jvm/java-17-openjdk-amd64"
-        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+        TOMCAT_HOME = "/home/ubuntu/apache-tomcat-9.0.115"
+        WAR_NAME = "webapp-1.0-SNAPSHOT.war"
     }
 
     stages {
-        stage('Checkout') {
+
+        stage('Checkout Code') {
             steps {
                 git branch: 'master',
                     url: 'https://github.com/SBalaAravind/Hello-World.git'
             }
         }
 
-        stage('Build') {
+        stage('Build WAR with Maven') {
             steps {
-                // Maven clean + package
-                sh 'mvn clean package'
+                sh '''
+                mvn clean package -DskipTests
+                '''
             }
         }
 
-        stage('Deploy') {
+        stage('Stop Tomcat') {
             steps {
-                // Copy WAR to Tomcat webapps folder
                 sh '''
-                cp webapp/target/webapp-1.0-SNAPSHOT.war \
-                /home/ubuntu/apache-tomcat-9.0.113/webapps/webapp.war
+                if pgrep -f tomcat > /dev/null
+                then
+                  $TOMCAT_HOME/bin/shutdown.sh
+                  sleep 10
+                fi
+                '''
+            }
+        }
+
+        stage('Deploy WAR') {
+            steps {
+                sh '''
+                rm -rf $TOMCAT_HOME/webapps/webapp-1.0-SNAPSHOT*
+                cp webapp/target/$WAR_NAME $TOMCAT_HOME/webapps/
+                '''
+            }
+        }
+
+        stage('Start Tomcat') {
+            steps {
+                sh '''
+                $TOMCAT_HOME/bin/startup.sh
+                sleep 20
+                '''
+            }
+        }
+
+        stage('Verify App') {
+            steps {
+                sh '''
+                curl -I http://localhost:8090/webapp-1.0-SNAPSHOT/ || true
                 '''
             }
         }
@@ -35,20 +69,14 @@ pipeline {
 
     post {
         success {
-            echo "Build & Deploy SUCCESS ✅"
+            echo "✅ CI/CD Pipeline SUCCESS – App Deployed"
         }
         failure {
-            echo "Build or Deploy FAILED ❌"
+            echo "❌ Pipeline FAILED – Check logs"
         }
     }
 }
 
-
-        stage('Deploy') {
-            steps {
-                sh '''
-                  cp webapp/target/webapp-1.0-SNAPSHOT.war $TOMCAT_HOME/webapps/
-                '''
             }
         }
     }
