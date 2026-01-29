@@ -2,73 +2,38 @@ pipeline {
     agent any
 
     tools {
-        jdk 'Java-17'
-        maven 'Maven-3.9.6'
-    }
-
-    environment {
-        TOMCAT_HOME = "/home/ubuntu/apache-tomcat-9.0.115"
-        WAR_NAME = "webapp-1.0-SNAPSHOT.war"
+        maven 'Maven3'
+        jdk 'jdk17'
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 git branch: 'master',
                     url: 'https://github.com/SBalaAravind/Hello-World.git'
             }
         }
 
-        stage('Build WAR') {
+        stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn clean package'
             }
         }
 
-        stage('Stop Tomcat') {
+        stage('Archive Artifact') {
             steps {
-                sh '''
-                if pgrep -f tomcat > /dev/null
-                then
-                    $TOMCAT_HOME/bin/shutdown.sh
-                    sleep 10
-                fi
-                '''
-            }
-        }
-
-        stage('Deploy WAR') {
-            steps {
-                sh '''
-                rm -rf $TOMCAT_HOME/webapps/webapp-1.0-SNAPSHOT*
-                cp webapp/target/$WAR_NAME $TOMCAT_HOME/webapps/
-                '''
-            }
-        }
-
-        stage('Start Tomcat') {
-            steps {
-                sh '''
-                $TOMCAT_HOME/bin/startup.sh
-                sleep 20
-                '''
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                sh 'curl -I http://localhost:8090/webapp-1.0-SNAPSHOT/ || true'
+                archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            echo '✅ Deployment Successful'
+            echo '✅ Build successful'
         }
         failure {
-            echo '❌ Deployment Failed'
+            echo '❌ Build failed'
         }
     }
 }
