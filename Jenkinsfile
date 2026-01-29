@@ -20,11 +20,9 @@ pipeline {
             }
         }
 
-        stage('Build WAR with Maven') {
+        stage('Build WAR') {
             steps {
-                sh '''
-                mvn clean package -DskipTests
-                '''
+                sh 'mvn clean package -DskipTests'
             }
         }
 
@@ -33,8 +31,8 @@ pipeline {
                 sh '''
                 if pgrep -f tomcat > /dev/null
                 then
-                  $TOMCAT_HOME/bin/shutdown.sh
-                  sleep 10
+                    $TOMCAT_HOME/bin/shutdown.sh
+                    sleep 10
                 fi
                 '''
             }
@@ -58,25 +56,22 @@ pipeline {
             }
         }
 
-        stage('Verify App') {
+        stage('Verify Deployment') {
             steps {
-                sh '''
-                curl -I http://localhost:8090/webapp-1.0-SNAPSHOT/ || true
-                '''
+                sh 'curl -I http://localhost:8090/webapp-1.0-SNAPSHOT/ || true'
             }
         }
     }
 
     post {
         success {
-            echo "✅ CI/CD Pipeline SUCCESS – App Deployed"
+            echo '✅ Deployment Successful'
         }
         failure {
-            echo "❌ Pipeline FAILED – Check logs"
+            echo '❌ Deployment Failed'
         }
     }
 }
-
             }
         }
     }
