@@ -16,7 +16,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo 'Checking out code...'
                 git branch: 'master',
                     url: 'https://github.com/SBalaAravind/Hello-World.git'
             }
@@ -24,14 +23,13 @@ pipeline {
 
         stage('Build WAR') {
             steps {
-                echo 'Building WAR using Maven'
                 sh 'mvn clean package'
             }
         }
 
         stage('Check WAR') {
             steps {
-                sh 'ls -l target'
+                sh 'ls -l webapp/target'
             }
         }
 
@@ -39,10 +37,10 @@ pipeline {
             steps {
                 sh """
                 ssh ${DEPLOY_USER}@${DEPLOY_HOST} '
-                    rm -rf ${DEPLOY_PATH}/Hello-World*
+                    rm -rf ${DEPLOY_PATH}/*
                 '
 
-                scp target/*.war \
+                scp webapp/target/*.war \
                     ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/
 
                 ssh ${DEPLOY_USER}@${DEPLOY_HOST} '
@@ -57,7 +55,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ WAR deployed successfully to Tomcat'
+            echo '✅ WAR deployed successfully'
         }
         failure {
             echo '❌ Pipeline failed'
